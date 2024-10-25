@@ -1,0 +1,63 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+#necessary libraries
+install.packages("ggplot2")
+install.packages("psych")
+library(ggplot2)
+library(psych)
+#Data Loading
+data<-read.csv("MS classroom/Quantitative Data Analysis/SusRtlx.csv")
+#Data Cleaning
+data <- na.omit(data)
+#Descriptive stats
+rtl_stats <- c(
+  Mean = mean(data$RTLX.Score),
+  Median = median(data$RTLX.Score),
+  SD = sd(data$RTLX.Score),
+  Min = min(data$RTLX.Score),
+  Max = max(data$RTLX.Score),
+  Q1 = quantile(data$RTLX.Score, 0.25),
+  Q3 = quantile(data$RTLX.Score, 0.75)
+)
+sus_stats <- c(
+  Mean = mean(data$SUS.Score),
+  Median = median(data$SUS.Score),
+  SD = sd(data$SUS.Score),
+  Min = min(data$SUS.Score),
+  Max = max(data$SUS.Score),
+  Q1 = quantile(data$SUS.Score, 0.25),
+  Q3 = quantile(data$SUS.Score, 0.75)
+)
+descriptive_table <- rbind(RTLX = rtl_stats, SUS = sus_stats)
+print("Descriptive Statistics for RTLX and SUS Scores:")
+print(descriptive_table)
+describe(data[, c("RTLX.Score", "SUS.Score")])
+#Histogram
+hist(data$SUS.Score, main = "SUS Score Distribution", xlab = "SUS Score")
+hist(data$RTLX.Score, main = "RTLX Score Distribution", xlab = "RTLX Score")
+#boxplot
+boxplot(data$RTLX.Score, data$SUS.Score, names = c("RTLX", "SUS"), main = "Boxplot of RTLX and SUS Scores")
+#pearson correlation
+correlation_result <- cor.test(data$SUS.Score, data$RTLX.Score)
+print(correlation_result)
+
+model <- lm(SUS.Score ~ RTLX.Score, data = data)
+summary(model)
+#scatterplot
+plot(data$RTLX.Score, data$SUS.Score, main = "RTLX vs SUS", xlab = "RTLX", ylab = "SUS")
+abline(model, col = "blue")
+
+
+data_melt <- data.frame(
+  Score = c(data$RTLX.Score, data$SUS.Score),
+  Type = factor(rep(c("RTLX", "SUS"), each = nrow(data)))
+)
+#Comined barplot
+ggplot(data_melt, aes(x = Score, fill = Type)) +
+  geom_histogram(position = "identity", alpha = 0.5, bins = 30) + 
+  labs(title = "Distribution of RTLX and SUS Scores", x = "Score", y = "Frequency") +
+  theme_minimal() +
+  scale_fill_manual(values = c("blue", "red"))
